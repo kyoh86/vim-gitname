@@ -20,20 +20,20 @@ function s:remote_url(remote)
   return v:null
 endfunction
 
-function bufref#git_rel_of(filename) abort
+function gitname#git_rel_of(filename) abort
   let l:prefix = s:shell("git", "-C", fnamemodify(a:filename, ":p:h"), "rev-parse", "--show-prefix")
   return l:prefix .. fnamemodify(a:filename, ":t")
 endfunction
 
-function bufref#git_rel() abort
-  return bufref#git_rel_of(expand("%"))
+function gitname#git_rel() abort
+  return gitname#git_rel_of(expand("%"))
 endfunction
 
-function bufref#git_hub_url(reftype) abort
-  return bufref#git_hub_url_of(a:reftype, expand("%"))
+function gitname#hub_url(reftype) abort
+  return gitname#hub_url_of(a:reftype, expand("%"))
 endfunction
 
-function bufref#git_hub_url_of(reftype, filename) abort
+function gitname#hub_url_of(reftype, filename) abort
   let l:dir = fnamemodify(a:filename, ":p:h")
   if a:reftype ==# "branch"
     let l:ref = s:shell("git", "-C", l:dir, "rev-parse", "--abbrev-ref", "HEAD")
@@ -51,5 +51,5 @@ function bufref#git_hub_url_of(reftype, filename) abort
     echoerr "Unsupported remote: " .. l:remote
   endif
 
-  return l:remote_url .. "/blob/" .. l:ref .. "/" .. bufref#git_rel()
+  return l:remote_url .. "/blob/" .. l:ref .. "/" .. gitname#git_rel()
 endfunction
