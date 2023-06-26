@@ -56,7 +56,7 @@ function gitname#_git#parse_config(gitdir)
       let l:currentSection = matchstr(l:line, '\[\zs.*\ze\]')
       let l:sections[l:currentSection] = {}
     elseif l:line =~ '^\s*[^#;]\+\s*=\s*.\+'
-      let l:key = matchstr(l:line, '^\s*\zs[^#;]\+\ze\s*=\s*.\+')
+      let l:key = matchstr(l:line, '^\s*\zs[^#;]\{-}\ze\s*=\s*.\+')
       let l:value = matchstr(l:line, '^\s*[^#;]\+\s*=\s*\zs.\+\ze')
       let l:sections[l:currentSection][l:key] = l:value
     endif

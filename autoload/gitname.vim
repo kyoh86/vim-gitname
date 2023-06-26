@@ -42,13 +42,16 @@ function gitname#hub_url_of(reftype, filename) abort
       throw "invalid status: current directory does NOT have git HEAD"
     endif
   else
-    echoerr "Invalid reftype: " .. a:reftype
+    throw "Invalid reftype: " .. a:reftype
   endif
 
-  let l:remote = get(get(gitname#_git#parse_config(l:gitdir), 'remote "origin"', {}), 'url')
+  let l:remote = get(get(gitname#_git#parse_config(l:gitdir), 'remote "origin"', {}), 'url', v:null)
+  if l:remote_url == v:null
+    throw 'Failed to find remote "origin" url'
+  endif
   let l:remote_url = s:remote_url(l:remote)
   if l:remote_url == v:null
-    echoerr "Unsupported remote: " .. l:remote
+    throw "Unsupported remote: " .. l:remote
   endif
 
   return l:remote_url .. "/blob/" .. l:ref .. "/" .. gitname#git_rel()
