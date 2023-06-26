@@ -1,8 +1,3 @@
-function s:shell(...)
-  " NOTE: this function cannot process multi-line output
-  return trim(system(join(map(copy(a:000), {_, a -> shellescape(a)}), " ")))
-endfunction
-
 function s:remote_url(remote)
   let l:cases = [
         \ ['^git@\(.*github\.com\):\(.\{-\}\)\(\.git\)\?$', {m -> "https://" .. m[1] .. '/' .. m[2]}],
@@ -21,8 +16,8 @@ function s:remote_url(remote)
 endfunction
 
 function gitname#git_rel_of(filename) abort
-  let l:prefix = s:shell("git", "-C", fnamemodify(a:filename, ":p:h"), "rev-parse", "--show-prefix")
-  return l:prefix .. fnamemodify(a:filename, ":t")
+  let [_, _, l:rel] = gitname#_git#root(a:filename)
+  return l:rel
 endfunction
 
 function gitname#git_rel() abort
@@ -34,18 +29,23 @@ function gitname#hub_url(reftype) abort
 endfunction
 
 function gitname#hub_url_of(reftype, filename) abort
+  let [_, l:gitdir, _] = gitname#_git#root(a:filename)
   let l:dir = fnamemodify(a:filename, ":p:h")
   if a:reftype ==# "branch"
-    let l:ref = s:shell("git", "-C", l:dir, "rev-parse", "--abbrev-ref", "HEAD")
-  elseif a:reftype ==# "commit"
-    let l:ref = s:shell("git", "-C", l:dir, "rev-list", "-1", "HEAD", "--", a:filename)
+    let [l:type, l:ref] = gitname#_git#parse_head_ref(l:gitdir)
+    if l:type !=# "heads"
+      throw "invalid status: current HEAD is not attached for a branch"
+    endif
   elseif a:reftype ==# "head"
-    let l:ref = s:shell("git", "-C", l:dir, "rev-parse", "HEAD")
+    let l:ref = gitname#_git#parse_head_commit(l:gitdir)
+    if l:ref ==# ""
+      throw "invalid status: current directory does NOT have git HEAD"
+    endif
   else
     echoerr "Invalid reftype: " .. a:reftype
   endif
 
-  let l:remote = s:shell("git", "-C", l:dir, "ls-remote", "--get-url", "origin")
+  let l:remote = get(get(gitname#_git#parse_config(l:gitdir), 'remote "origin"', {}), 'url')
   let l:remote_url = s:remote_url(l:remote)
   if l:remote_url == v:null
     echoerr "Unsupported remote: " .. l:remote
