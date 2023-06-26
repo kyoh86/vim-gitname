@@ -46,7 +46,7 @@ function gitname#hub_url_of(reftype, filename) abort
   endif
 
   let l:remote = get(get(gitname#_git#parse_config(l:gitdir), 'remote "origin"', {}), 'url', v:null)
-  if l:remote_url == v:null
+  if l:remote == v:null
     throw 'Failed to find remote "origin" url'
   endif
   let l:remote_url = s:remote_url(l:remote)
